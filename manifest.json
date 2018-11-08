@@ -1,7 +1,7 @@
 {
    "name": "Artboard for PDF",
    "id": "572d4397",
-   "version":"1.0.0",
+   "version":"1.0.1",
    "description":"Create artboards for exporting as PDF files. You Can Select Size (A3 - B5) and Orientation (Landscape or Portrait).",
    "icons":[
       {
