@@ -18,20 +18,21 @@ const printingSize = {
 
 var defaultFormat = 'a4';
 var defaultOrientation = 'landscape';
+var defaultPageCount = 1;
 
 const kArtboardMargin = 70;
+const kMaxPageCount = 100;
 
 function createDialog(){
-  let createButton, cancelButton, formatSelect, orientationSelect;
+  let createButton, cancelButton, formatSelect, orientationSelect, pageCountInput;
   if(!dialog){
-    console.log();
     dialog = document.createElement("dialog");
     var html = '<style>form {width: 360px;}.h1 {align-items: center;justify-content: space-between;display: flex;flex-direction: row;}.icon {border-radius: 4px;width: 24px;height: 24px;overflow: hidden;}</style>';
 
     if(application.appLanguage == 'ja'){
-      html += '<form method="dialog"><h1 class="h1"><span>PDF用アートボードの作成</span><img class="icon" src="./assets/icon.png" /></h1><hr /><label><span>用紙のサイズ</span><select id="formatSelect"><option value="a4" selected>A4</option><option value="a3">A3</option><option value="b5">B5</option><option value="b4">B4</option></select></label><label><span>用紙の向き</span><select id="orientationSelect"><option value="landscape">横向き</option><option value="portraito">縦向き</option></select></label><footer><button uxp-variant="primary" id="cancelButton">キャンセル</button><button type="submit" uxp-variant="cta" id="createButton">作成</button></footer></form>';
+      html += '<form method="dialog"><h1 class="h1"><span>PDF用アートボードの作成</span><img class="icon" src="./assets/icon.png" /></h1><hr /><label><span>用紙のサイズ</span><select id="formatSelect"><option value="a4" selected>A4</option><option value="a3">A3</option><option value="b5">B5</option><option value="b4">B4</option></select></label><label><span>用紙の向き</span><select id="orientationSelect"><option value="landscape">横向き</option><option value="portraito">縦向き</option></select></label><label><span>ページ数 (1 - ' + kMaxPageCount + ')</span><input type="number" min="1" max="100" value="1" id="pageCount" /></label><footer><button uxp-variant="primary" id="cancelButton">キャンセル</button><button type="submit" uxp-variant="cta" id="createButton">作成</button></footer></form>';
     }else{
-      html += '<form method="dialog"><h1 class="h1"><span>New Artboard for PDF</span><img class="icon" src="./assets/icon.png" /></h1><hr /><label><span>Size</span><select id="formatSelect"><option value="a4" selected>A4</option><option value="a3">A3</option><option value="b5">B5</option><option value="b4">B4</option></select></label><label><span>Orientation</span><select id="orientationSelect"><option value="landscape">Landscape</option><option value="portraito">Portrait</option></select></label><footer><button uxp-variant="primary" id="cancelButton">Cancel</button><button type="submit" uxp-variant="cta" id="createButton">Create</button></footer></form>';
+      html += '<form method="dialog"><h1 class="h1"><span>New Artboard for PDF</span><img class="icon" src="./assets/icon.png" /></h1><hr /><label><span>Size</span><select id="formatSelect"><option value="a4" selected>A4</option><option value="a3">A3</option><option value="b5">B5</option><option value="b4">B4</option></select></label><label><span>Orientation</span><select id="orientationSelect"><option value="landscape">Landscape</option><option value="portraito">Portrait</option></select></label><label><span>Page Count (1 - ' + kMaxPageCount + ')</span><input type="number" min="1" max="100" value="1" id="pageCount" /></label><footer><button uxp-variant="primary" id="cancelButton">Cancel</button><button type="submit" uxp-variant="cta" id="createButton">Create</button></footer></form>';
     }
     dialog.innerHTML = html;
 
@@ -43,9 +44,10 @@ function createDialog(){
     cancelButton = document.getElementById("cancelButton");
     formatSelect = document.getElementById("formatSelect");
     orientationSelect = document.getElementById("orientationSelect");
+    pageCountInput = document.getElementById("pageCount");
 
     createButton.addEventListener('click', function(e){
-      dialog.close({format:formatSelect.value, orientation:orientationSelect.value });
+      dialog.close({format:formatSelect.value, orientation:orientationSelect.value, pageCount:pageCountInput.value });
 
       defaultFormat = formatSelect.value;
       defaultOrientation = orientationSelect.value;
@@ -58,24 +60,50 @@ function createDialog(){
 
   formatSelect.value = defaultFormat;
   orientationSelect.value = defaultOrientation;
+  pageCountInput.value = defaultPageCount;
 
   return dialog;
 
 }
 
+
 async function newArtboardCommand(selection,documentRoot) {
 
   var result = await createDialog().showModal();
+  var column = 10;
 
   if(result){
     var size = printingSize[result.format];
     var isLandscape = (result.orientation == 'landscape');
-    var name = generateArtboadName(size.name, documentRoot);
-    var artboard = createArtboard(size, isLandscape, name);
-    documentRoot.addChild(artboard);
+    var pageCount = checkPageCount(result.pageCount);
 
-    var position = getNewArtboardPosition(documentRoot);
-    artboard.placeInParentCoordinates({x:0, y:0}, {x:position.x, y:position.y});
+    var firstPositon;
+    var positionDx, positionDy;
+    if(isLandscape){
+      positionDx = size.width + kArtboardMargin;
+      positionDy = size.height + kArtboardMargin;
+    }else{
+      positionDx = size.height + kArtboardMargin;
+      positionDy = size.width + kArtboardMargin;
+    }
+
+    for(var i = 0; i < pageCount; i++){
+      var name = generateArtboadName(size.name, documentRoot);
+      var artboard = createArtboard(size, isLandscape, name);
+      documentRoot.addChild(artboard);
+
+      var position;
+      if(i == 0){
+        position = getNewArtboardPosition(documentRoot);
+        firstPositon = position;
+      }else{
+        position = {
+          x: firstPositon.x + positionDx * (i % column),
+          y: firstPositon.y + positionDy * Math.floor(i / column)
+        };
+      }
+      artboard.placeInParentCoordinates({x:0, y:0}, {x:position.x, y:position.y});
+    }
   }
 }
 
@@ -139,6 +167,22 @@ function generateArtboadName(originalName, documentRoot){
     return name + ' - ' + num;
   }
 }
+
+
+function checkPageCount(pageCount){
+  var result;
+  if(isNaN(pageCount)){
+    result = 1;
+  }else if(pageCount < 1){
+    result = 1;
+  }else if(pageCount > kMaxPageCount){
+    result = kMaxPageCount;
+  }else{
+    result = pageCount;
+  }
+  return result;
+}
+
 
 module.exports = {
     commands: {
