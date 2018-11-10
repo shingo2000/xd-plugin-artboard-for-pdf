@@ -6,8 +6,6 @@
 
 let { Artboard, Color} = require("scenegraph");
 let application = require("application");
-var dialog;
-
 
 const printingSize = {
   a4:{width:842, height:595, name:'A4'},
@@ -15,13 +13,14 @@ const printingSize = {
   b5:{width:729, height:516, name:'B5'},
   b4:{width:1032, height:729, name:'B4'}
 };
+const kArtboardMargin = 70;
+const kArtboardColumn = 10;
+const kMaxPageCount = 100;
 
+var dialog;
 var defaultFormat = 'a4';
 var defaultOrientation = 'landscape';
 var defaultPageCount = 1;
-
-const kArtboardMargin = 70;
-const kMaxPageCount = 100;
 
 function createDialog(){
   let createButton, cancelButton, formatSelect, orientationSelect, pageCountInput;
@@ -34,8 +33,8 @@ function createDialog(){
     }else{
       html += '<form method="dialog"><h1 class="h1"><span>New Artboard for PDF</span><img class="icon" src="./assets/icon.png" /></h1><hr /><label><span>Size</span><select id="formatSelect"><option value="a4" selected>A4</option><option value="a3">A3</option><option value="b5">B5</option><option value="b4">B4</option></select></label><label><span>Orientation</span><select id="orientationSelect"><option value="landscape">Landscape</option><option value="portraito">Portrait</option></select></label><label><span>Page Count (1 - ' + kMaxPageCount + ')</span><input type="number" min="1" max="100" value="1" id="pageCount" /></label><footer><button uxp-variant="primary" id="cancelButton">Cancel</button><button type="submit" uxp-variant="cta" id="createButton">Create</button></footer></form>';
     }
-    dialog.innerHTML = html;
 
+    dialog.innerHTML = html;
     document.body.appendChild(dialog);
 
     }
@@ -48,7 +47,6 @@ function createDialog(){
 
     createButton.addEventListener('click', function(e){
       dialog.close({format:formatSelect.value, orientation:orientationSelect.value, pageCount:pageCountInput.value });
-
       defaultFormat = formatSelect.value;
       defaultOrientation = orientationSelect.value;
       e.preventDefault();
@@ -70,7 +68,6 @@ function createDialog(){
 async function newArtboardCommand(selection,documentRoot) {
 
   var result = await createDialog().showModal();
-  var column = 10;
 
   if(result){
     var size = printingSize[result.format];
@@ -98,8 +95,8 @@ async function newArtboardCommand(selection,documentRoot) {
         firstPositon = position;
       }else{
         position = {
-          x: firstPositon.x + positionDx * (i % column),
-          y: firstPositon.y + positionDy * Math.floor(i / column)
+          x: firstPositon.x + positionDx * (i % kArtboardColumn),
+          y: firstPositon.y + positionDy * Math.floor(i / kArtboardColumn)
         };
       }
       artboard.placeInParentCoordinates({x:0, y:0}, {x:position.x, y:position.y});
