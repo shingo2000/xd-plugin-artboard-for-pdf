@@ -29,9 +29,9 @@ function createDialog(){
     var html = '<style>form {width: 360px;}.h1 {align-items: center;justify-content: space-between;display: flex;flex-direction: row;}.icon {border-radius: 4px;width: 24px;height: 24px;overflow: hidden;}</style>';
 
     if(application.appLanguage == 'ja'){
-      html += '<form method="dialog"><h1 class="h1"><span>PDF用アートボードの作成</span><img class="icon" src="./assets/icon.png" /></h1><hr /><label><span>用紙のサイズ</span><select id="formatSelect"><option value="a4" selected>A4</option><option value="a3">A3</option><option value="b5">B5</option><option value="b4">B4</option></select></label><label><span>用紙の向き</span><select id="orientationSelect"><option value="landscape">横向き</option><option value="portraito">縦向き</option></select></label><label><span>ページ数 (1 - ' + kMaxPageCount + ')</span><input type="number" min="1" max="100" value="1" id="pageCount" /></label><footer><button uxp-variant="primary" id="cancelButton">キャンセル</button><button type="submit" uxp-variant="cta" id="createButton">作成</button></footer></form>';
+      html += '<form method="dialog"><h1 class="h1"><span>PDF用アートボードの作成</span><img class="icon" src="./assets/icon.png" /></h1><hr /><label><span>用紙のサイズ</span><select id="formatSelect"><option value="a4" selected>A4</option><option value="a3">A3</option><option value="b5">B5</option><option value="b4">B4</option></select></label><label><span>用紙の向き</span><select id="orientationSelect"><option value="landscape">横向き</option><option value="portrait">縦向き</option></select></label><label><span>ページ数 (1 - ' + kMaxPageCount + ')</span><input type="number" min="1" max="100" value="1" id="pageCount" /></label><footer><button uxp-variant="primary" id="cancelButton">キャンセル</button><button type="submit" uxp-variant="cta" id="createButton">作成</button></footer></form>';
     }else{
-      html += '<form method="dialog"><h1 class="h1"><span>New Artboard for PDF</span><img class="icon" src="./assets/icon.png" /></h1><hr /><label><span>Size</span><select id="formatSelect"><option value="a4" selected>A4</option><option value="a3">A3</option><option value="b5">B5</option><option value="b4">B4</option></select></label><label><span>Orientation</span><select id="orientationSelect"><option value="landscape">Landscape</option><option value="portraito">Portrait</option></select></label><label><span>Page Count (1 - ' + kMaxPageCount + ')</span><input type="number" min="1" max="100" value="1" id="pageCount" /></label><footer><button uxp-variant="primary" id="cancelButton">Cancel</button><button type="submit" uxp-variant="cta" id="createButton">Create</button></footer></form>';
+      html += '<form method="dialog"><h1 class="h1"><span>New Artboard for PDF</span><img class="icon" src="./assets/icon.png" /></h1><hr /><label><span>Size</span><select id="formatSelect"><option value="a4" selected>A4</option><option value="a3">A3</option><option value="b5">B5</option><option value="b4">B4</option></select></label><label><span>Orientation</span><select id="orientationSelect"><option value="landscape">Landscape</option><option value="portrait">Portrait</option></select></label><label><span>Page Count (1 - ' + kMaxPageCount + ')</span><input type="number" min="1" max="100" value="1" id="pageCount" /></label><footer><button uxp-variant="primary" id="cancelButton">Cancel</button><button type="submit" uxp-variant="cta" id="createButton">Create</button></footer></form>';
     }
 
     dialog.innerHTML = html;
@@ -70,23 +70,22 @@ async function newArtboardCommand(selection,documentRoot) {
   var result = await createDialog().showModal();
 
   if(result){
-    var size = printingSize[result.format];
-    var isLandscape = (result.orientation == 'landscape');
+    var _size = printingSize[result.format];
+    var size = {width: 0, height: 0, name: _size.name};
+    if(result.orientation == 'landscape'){
+      size.width = _size.width;
+      size.height = _size.height;
+    }else{
+      size.width = _size.height;
+      size.height = _size.width;
+    }
     var pageCount = checkPageCount(result.pageCount);
 
     var firstPositon;
-    var positionDx, positionDy;
-    if(isLandscape){
-      positionDx = size.width + kArtboardMargin;
-      positionDy = size.height + kArtboardMargin;
-    }else{
-      positionDx = size.height + kArtboardMargin;
-      positionDy = size.width + kArtboardMargin;
-    }
 
     for(var i = 0; i < pageCount; i++){
       var name = generateArtboadName(size.name, documentRoot);
-      var artboard = createArtboard(size, isLandscape, name);
+      var artboard = createArtboard(size, name);
       documentRoot.addChild(artboard);
 
       var position;
@@ -95,8 +94,8 @@ async function newArtboardCommand(selection,documentRoot) {
         firstPositon = position;
       }else{
         position = {
-          x: firstPositon.x + positionDx * (i % kArtboardColumn),
-          y: firstPositon.y + positionDy * Math.floor(i / kArtboardColumn)
+          x: firstPositon.x + (size.width + kArtboardMargin) * (i % kArtboardColumn),
+          y: firstPositon.y + (size.height + kArtboardMargin) * Math.floor(i / kArtboardColumn)
         };
       }
       artboard.placeInParentCoordinates({x:0, y:0}, {x:position.x, y:position.y});
@@ -105,15 +104,10 @@ async function newArtboardCommand(selection,documentRoot) {
 }
 
 
-function createArtboard(size,isLandscape,name){
+function createArtboard(size, name){
   const artboard = new Artboard();
-  if(isLandscape){
-    artboard.width = size.width;
-    artboard.height = size.height;
-  }else{
-    artboard.width = size.height;
-    artboard.height = size.width;
-  }
+  artboard.width = size.width;
+  artboard.height = size.height;
   artboard.name = name;
   artboard.fill = new Color('#FFFFFF');
   return artboard;
@@ -179,6 +173,7 @@ function checkPageCount(pageCount){
   }
   return result;
 }
+
 
 
 module.exports = {
