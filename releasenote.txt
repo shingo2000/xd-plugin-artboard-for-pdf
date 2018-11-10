@@ -1,0 +1,9 @@
+# Release Notes
+
+## 1.1.0
+
+- Added a function that can set the number of artboards.
+
+## 1.0.0
+
+Create artboards for exporting as PDF files. You Can Select Size (A3 - B5) and Orientation (Landscape or Portrait).
