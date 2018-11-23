@@ -18,11 +18,24 @@
       {
          "type":"menu",
          "label":{
-           "default":"New Artboard for PDF",
-           "ja":"PDF用アートボードの作成"
+           "default":"PDF Plus",
+           "ja":"PDF Plus"
          },
-         "commandId":"newArtboardCommand",
-         "shortcut": { "mac": "Cmd+Shift+P", "win": "Ctrl+Shift+P" }
+         "menuItems":[{
+           "label":{
+             "default":"New Artboard for PDF",
+             "ja":"PDF用アートボードの作成"
+           },
+           "commandId":"newArtboardCommand",
+           "shortcut": { "mac": "Cmd+Shift+P", "win": "Ctrl+Shift+P" }
+         },{
+           "label":{
+             "default":"Compress Image",
+             "ja":"画像の圧縮"
+           },
+           "commandId":"compressImageCommand"
+         }
+       ]
       }
    ]
 }

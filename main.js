@@ -4,13 +4,15 @@
  * Visit http://adobexdplatform.com/ for API docs and more sample code.
  */
 
-let new_artboard = require("./new_artboard");
+const new_artboard = require("./new_artboard");
+const compress_image = require("./compress_image");
 
 
 
 
 module.exports = {
     commands: {
-        newArtboardCommand: new_artboard
+        newArtboardCommand: new_artboard,
+        compressImageCommand: compress_image
     }
 };
