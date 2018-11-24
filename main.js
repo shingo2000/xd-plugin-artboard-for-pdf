@@ -7,9 +7,6 @@
 const new_artboard = require("./new_artboard");
 const compress_image = require("./compress_image");
 
-
-
-
 module.exports = {
     commands: {
         newArtboardCommand: new_artboard,
