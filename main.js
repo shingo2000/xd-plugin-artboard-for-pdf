@@ -1,11 +1,5 @@
-/*
- * Sample plugin scaffolding for Adobe XD.
- *
- * Visit http://adobexdplatform.com/ for API docs and more sample code.
- */
-
-let { Artboard, Color} = require("scenegraph");
-let application = require("application");
+const { Artboard, Color} = require("scenegraph");
+const application = require("application");
 const viewport = require("viewport");
 
 const printingSize = {
@@ -18,16 +12,16 @@ const kArtboardMargin = 70;
 const kArtboardColumn = 10;
 const kMaxPageCount = 100;
 
-var dialog;
-var defaultFormat = 'a4';
-var defaultOrientation = 'landscape';
-var defaultPageCount = 1;
+let dialog;
+let defaultFormat = 'a4';
+let defaultOrientation = 'landscape';
+let defaultPageCount = 1;
 
 function createDialog(){
   let createButton, cancelButton, formatSelect, orientationSelect, pageCountInput;
   if(!dialog){
     dialog = document.createElement("dialog");
-    var html = '<style>form {width: 360px;}.h1 {align-items: center;justify-content: space-between;display: flex;flex-direction: row;}.icon {border-radius: 4px;width: 24px;height: 24px;overflow: hidden;}</style>';
+    let html = '<style>form {width: 360px;}.h1 {align-items: center;justify-content: space-between;display: flex;flex-direction: row;}.icon {border-radius: 4px;width: 24px;height: 24px;overflow: hidden;}</style>';
 
     if(application.appLanguage == 'ja'){
       html += '<form method="dialog"><h1 class="h1"><span>PDF用アートボードの作成</span><img class="icon" src="./assets/icon.png" /></h1><hr /><label><span>用紙のサイズ</span><select id="formatSelect"><option value="a4" selected>A4</option><option value="a3">A3</option><option value="b5">B5</option><option value="b4">B4</option></select></label><label><span>用紙の向き</span><select id="orientationSelect"><option value="landscape">横向き</option><option value="portrait">縦向き</option></select></label><label><span>ページ数 (1 - ' + kMaxPageCount + ')</span><input type="number" min="1" max="100" value="1" id="pageCount" /></label><footer><button uxp-variant="primary" id="cancelButton">キャンセル</button><button type="submit" uxp-variant="cta" id="createButton">作成</button></footer></form>';
@@ -68,11 +62,11 @@ function createDialog(){
 
 async function newArtboardCommand(selection,documentRoot) {
 
-  var result = await createDialog().showModal();
+  let result = await createDialog().showModal();
 
   if(result){
-    var _size = printingSize[result.format];
-    var size = {width: 0, height: 0, name: _size.name};
+    let _size = printingSize[result.format];
+    let size = {width: 0, height: 0, name: _size.name};
     if(result.orientation == 'landscape'){
       size.width = _size.width;
       size.height = _size.height;
@@ -80,16 +74,16 @@ async function newArtboardCommand(selection,documentRoot) {
       size.width = _size.height;
       size.height = _size.width;
     }
-    var pageCount = checkPageCount(result.pageCount);
+    let pageCount = checkPageCount(result.pageCount);
 
-    var firstPositon;
+    let firstPositon;
     let artboard;
     for(var i = 0; i < pageCount; i++){
-      var name = generateArtboadName(size.name, documentRoot);
+      let name = generateArtboadName(size.name, documentRoot);
       artboard = createArtboard(size, name);
       documentRoot.addChild(artboard);
 
-      var position;
+      let position;
       if(i == 0){
         position = getNewArtboardPosition(documentRoot);
         firstPositon = position;
@@ -119,14 +113,14 @@ function createArtboard(size, name){
 
 
 function getNewArtboardPosition(documentRoot){
-  var result = {x:0, y:0};
+  let result = {x:0, y:0};
 
   documentRoot.children.forEach(function(child,i){
     if(i == 0){
       result.x = child.globalBounds.x;
       result.y = child.globalBounds.y + child.height + kArtboardMargin;
     }else{
-      var __y = child.globalBounds.y + child.height + kArtboardMargin;
+      let __y = child.globalBounds.y + child.height + kArtboardMargin;
       if(result.y < __y){
         result.y = __y;
       }
@@ -139,13 +133,13 @@ function getNewArtboardPosition(documentRoot){
 
 
 function generateArtboadName(originalName, documentRoot){
-  var name = originalName;
-  var num = 0;
+  let name = originalName;
+  let num = 0;
   documentRoot.children.forEach(function(child,i){
-    var ary = child.name.split(' - ');
+    let ary = child.name.split(' - ');
     if(ary[0] == originalName){
       if(ary.length > 1){
-        var _num = (ary[1]-0);
+        let _num = (ary[1]-0);
         if(_num >= num){
           num = _num + 1;
         }
@@ -163,7 +157,7 @@ function generateArtboadName(originalName, documentRoot){
 
 
 function checkPageCount(pageCount){
-  var result;
+  let result;
   if(isNaN(pageCount)){
     result = 1;
   }else if(pageCount < 1){
