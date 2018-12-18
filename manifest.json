@@ -12,30 +12,17 @@
    ],
    "host":{
       "app":"XD",
-      "minVersion":"13.0.0"
+      "minVersion":"14.0.0"
    },
    "uiEntryPoints":[
       {
          "type":"menu",
          "label":{
-           "default":"PDF Plus",
-           "ja":"PDF Plus"
+           "default":"Artboard for PDF",
+           "ja":"PDF用アートボードの作成"
          },
-         "menuItems":[{
-           "label":{
-             "default":"New Artboard for PDF",
-             "ja":"PDF用アートボードの作成"
-           },
-           "commandId":"newArtboardCommand",
-           "shortcut": { "mac": "Cmd+Shift+P", "win": "Ctrl+Shift+P" }
-         },{
-           "label":{
-             "default":"Compress Image",
-             "ja":"画像の圧縮"
-           },
-           "commandId":"compressImageCommand"
-         }
-       ]
+         "commandId":"newArtboardCommand",
+         "shortcut": { "mac": "Cmd+Shift+P", "win": "Ctrl+Shift+P" }
       }
    ]
 }
